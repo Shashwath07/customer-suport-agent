@@ -1,64 +1,50 @@
+
+---
+
+# 2. `docs/architecture.md`
+
+```markdown
 # Customer Support AI Agent - Architecture
 
 ## 1. Project Overview
 
 The Customer Support AI Agent is an AI-powered customer support system
-designed to provide personalized responses by using customer-specific
-memory across conversations.
+that uses customer-specific memory to provide more contextual and
+personalized support responses.
 
 The system combines:
 
-- A web-based customer support interface
+- Web-based chat interface
 - Flask backend
 - Hindsight memory
 - Groq-powered LLM
 - Customer-specific data
-- Conversation memory
-- API-based integration between all modules
-
-The main objective is to make the AI support agent remember useful
-customer information and use that information when responding to
-future customer requests.
+- Persistent conversation context
+- REST API integration
 
 ---
 
 # 2. Main Goal
 
-Traditional support systems often treat every customer message as
-an independent interaction.
+The main goal is to build a customer support agent that can remember
+useful customer-specific information and use that information in
+future interactions.
 
-Our system instead maintains customer-specific context.
+Instead of treating every customer message as completely independent,
+the system retrieves relevant customer context before generating a
+response.
 
-Example:
-
-### First conversation
-
-Customer:
-
-> My payment failed.
-
-The system processes the issue and stores useful information.
-
-### Later conversation
-
-Customer:
-
-> It failed again.
-
-The system retrieves the previous payment-related memory and gives
-a more contextual response.
-
-Therefore:
+The overall concept is:
 
 ```text
-Previous interaction
+Customer Interaction
         ↓
-Useful information stored
+Useful Information
         ↓
-Future interaction
+Memory
         ↓
-Relevant memory retrieved
+Future Interaction
         ↓
-AI uses memory
+Memory Retrieval
         ↓
-Personalized response
+Context-Aware AI Response
