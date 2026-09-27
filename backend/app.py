@@ -1,177 +1,46 @@
-"""
-Main Flask application for the Customer Support AI Agent.
-
-Responsibilities:
-- Start the Flask server
-- Register API routes
-- Serve the frontend
-- Provide health-check endpoint
-- Handle application-level errors
-"""
-
-from pathlib import Path
-
-from flask import (
-    Flask,
-    jsonify,
-    send_from_directory
-)
-
+from flask import Flask, jsonify, request
 from flask_cors import CORS
-from dotenv import load_dotenv
+
+# If your Memory Lead created a file named memory.py, import it like this:
+# from memory import get_memory
+
+app = Flask(__name__)
+CORS(app)
 
 
-# ============================================================
-# PROJECT PATHS
-# ============================================================
-
-BACKEND_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = BACKEND_DIR.parent
-FRONTEND_DIR = PROJECT_ROOT / "frontend"
-
-
-# ============================================================
-# ENVIRONMENT
-# ============================================================
-
-load_dotenv(
-    PROJECT_ROOT / ".env"
-)
-
-
-# ============================================================
-# FLASK APP
-# ============================================================
-
-app = Flask(
-    __name__
-)
-
-
-# ============================================================
-# CORS
-# ============================================================
-
-CORS(
-    app,
-    resources={
-        r"/api/*": {
-            "origins": "*"
-        }
+# Temporary fallback implementation until the Memory Lead's file is plugged in:
+def get_memory(customer_id: str) -> list[str]:
+    # Mock data store
+    sample_memories = {
+        "cust_001": [
+            "Sept 10: recurring task duplication, fixed by disabling auto-repeat",
+            "Aug 15: reported login delay after password reset",
+        ],
+        "cust_002": [
+            "July 04: requested upgrade to pro tier",
+        ],
     }
-)
+    return sample_memories.get(customer_id, [])
 
 
-# ============================================================
-# IMPORT API BLUEPRINT
-# ============================================================
+@app.route("/chat", methods=["POST", "GET"])
+def chat():
+    # 1. Parse incoming request
+    data = request.get_json(silent=True) or {}
+    customer_id = data.get("customer_id")
+    message = data.get("message")
 
-from backend.routes.chat_routes import chat_bp
+    # 2. Wire in Memory Retrieval as the first step
+    recalled_memories = get_memory(customer_id) if customer_id else []
 
+    # 3. Construct response using the retrieved memories
+    response = {
+        "reply": f"Processing message for {customer_id}: '{message}'",
+        "recalled_memories": recalled_memories,
+    }
 
-# ============================================================
-# REGISTER API ROUTES
-# ============================================================
+    return jsonify(response), 200
 
-app.register_blueprint(
-    chat_bp,
-    url_prefix="/api/chat"
-)
-
-
-# ============================================================
-# FRONTEND ROUTES
-# ============================================================
-
-@app.get("/")
-def serve_frontend():
-    """
-    Serve the main frontend page.
-    """
-
-    return send_from_directory(
-        FRONTEND_DIR,
-        "index.html"
-    )
-
-
-@app.get("/style.css")
-def serve_stylesheet():
-    """
-    Serve frontend CSS.
-    """
-
-    return send_from_directory(
-        FRONTEND_DIR,
-        "style.css"
-    )
-
-
-@app.get("/script.js")
-def serve_javascript():
-    """
-    Serve frontend JavaScript.
-    """
-
-    return send_from_directory(
-        FRONTEND_DIR,
-        "script.js"
-    )
-
-
-# ============================================================
-# HEALTH CHECK
-# ============================================================
-
-@app.get("/api/health")
-def health_check():
-    """
-    Basic server health-check endpoint.
-    """
-
-    return jsonify({
-        "success": True,
-        "status": "online",
-        "service": "Customer Support AI Agent"
-    })
-
-
-# ============================================================
-# GLOBAL ERROR HANDLER
-# ============================================================
-
-@app.errorhandler(404)
-def handle_not_found(error):
-    """
-    Handle unknown routes.
-    """
-
-    return jsonify({
-        "success": False,
-        "error": "Endpoint not found."
-    }), 404
-
-
-@app.errorhandler(500)
-def handle_server_error(error):
-    """
-    Handle unexpected server errors.
-    """
-
-    return jsonify({
-        "success": False,
-        "error": "Internal server error."
-    }), 500
-
-
-# ============================================================
-# APPLICATION START
-# ============================================================
 
 if __name__ == "__main__":
-
-    app.run(
-        host="0.0.0.0",
-        port=5000,
-        debug=True
-    )
+    app.run(debug=True, port=5000)
