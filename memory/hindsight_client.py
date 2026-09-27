@@ -125,7 +125,7 @@ def ensure_customer_bank(customer_id: str):
         client.create_bank(
             bank_id=bank_id,
             name=f"Customer Support - {customer_id}",
-            mission=(
+            background=(
                 "Store and retrieve useful customer-specific "
                 "information, support history, preferences, "
                 "issues, actions, and relevant conversation context."
