@@ -1,1 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Customer Support AI Agent</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- ================= HEADER ================= -->
+        <header class="top-bar">
+
+            <div class="brand">
+                <div class="brand-icon">✦</div>
+
+                <div>
+                    <h1>SupportAI</h1>
+                    <p>Customer Support Agent</p>
+                </div>
+            </div>
+
+            <div class="status">
+                <span class="status-dot"></span>
+                <span>AI Online</span>
+            </div>
+
+        </header>
+
+
+        <!-- ================= MAIN CONTENT ================= -->
+        <main class="main-container">
+
+            <!-- ================= CHAT SECTION ================= -->
+            <section class="chat-section">
+
+                <div class="chat-header">
+
+                    <div>
+                        <h2>Customer Support</h2>
+                        <p id="customer-display">
+                            Customer: Not selected
+                        </p>
+                    </div>
+
+                    <button
+                        id="clear-chat-btn"
+                        class="secondary-btn"
+                        type="button">
+                        Clear Chat
+                    </button>
+
+                </div>
+
+
+                <!-- Customer ID -->
+                <div class="customer-box">
+
+                    <label for="customer-id">
+                        Customer ID
+                    </label>
+
+                    <div class="customer-input-row">
+
+                        <input
+                            type="text"
+                            id="customer-id"
+                            placeholder="Example: CUST001"
+                            value="CUST001"
+                            autocomplete="off"
+                        >
+
+                        <button
+                            id="load-customer-btn"
+                            type="button">
+                            Load Customer
+                        </button>
+
+                    </div>
+
+                    <p class="input-help">
+                        Enter the customer ID to use their personalized memory.
+                    </p>
+
+                </div>
+
+
+                <!-- Chat messages -->
+                <div
+                    id="chat-messages"
+                    class="chat-messages">
+
+                    <!-- Welcome message -->
+                    <div class="message ai-message">
+
+                        <div class="avatar ai-avatar">
+                            AI
+                        </div>
+
+                        <div class="message-content">
+
+                            <div class="message-name">
+                                SupportAI
+                            </div>
+
+                            <div class="message-bubble">
+                                Hello! I'm your customer support assistant.
+                                I can remember useful information about
+                                customers and use it in future conversations.
+                            </div>
+
+                            <div class="message-time">
+                                Just now
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Typing indicator -->
+                <div
+                    id="typing-indicator"
+                    class="typing-indicator hidden">
+
+                    <div class="avatar ai-avatar">
+                        AI
+                    </div>
+
+                    <div class="typing-bubble">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+
+                </div>
+
+
+                <!-- Message input -->
+                <div class="message-input-area">
+
+                    <textarea
+                        id="message-input"
+                        rows="1"
+                        placeholder="Type your message..."
+                        autocomplete="off"></textarea>
+
+                    <button
+                        id="send-btn"
+                        class="send-btn"
+                        type="button"
+                        aria-label="Send message">
+
+                        <span>➤</span>
+
+                    </button>
+
+                </div>
+
+                <p class="privacy-note">
+                    AI responses are generated using the customer's query
+                    and relevant recalled memories.
+                </p>
+
+            </section>
+
+
+            <!-- ================= MEMORY SIDEBAR ================= -->
+            <aside class="memory-section">
+
+                <div class="memory-header">
+
+                    <div class="memory-title">
+
+                        <div class="memory-icon">
+                            🧠
+                        </div>
+
+                        <div>
+                            <h2>Recalled Memory</h2>
+                            <p>Customer-specific information</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Memory status -->
+                <div
+                    id="memory-status"
+                    class="memory-status">
+
+                    <span class="memory-status-dot"></span>
+
+                    <span>
+                        Waiting for customer
+                    </span>
+
+                </div>
+
+
+                <!-- Memory list -->
+                <div
+                    id="memory-list"
+                    class="memory-list">
+
+                    <div class="empty-memory">
+
+                        <div class="empty-memory-icon">
+                            🧠
+                        </div>
+
+                        <h3>No memories yet</h3>
+
+                        <p>
+                            Customer memories will appear here when
+                            the AI recalls useful information.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Memory explanation -->
+                <div class="memory-info">
+
+                    <h3>How memory works</h3>
+
+                    <div class="memory-step">
+                        <span>1</span>
+                        <p>
+                            Customer sends a message.
+                        </p>
+                    </div>
+
+                    <div class="memory-step">
+                        <span>2</span>
+                        <p>
+                            Relevant memories are retrieved.
+                        </p>
+                    </div>
+
+                    <div class="memory-step">
+                        <span>3</span>
+                        <p>
+                            AI uses the memory to personalize
+                            the response.
+                        </p>
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </main>
+
+    </div>
+
+
+    <!-- ================= JAVASCRIPT ================= -->
+    <script src="script.js"></script>
+
+</body>
+</html>
