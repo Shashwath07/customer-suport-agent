@@ -1,15 +1,20 @@
 /* =========================================================
    CUSTOMER SUPPORT AI AGENT
-   Frontend JavaScript
+   FRONTEND JAVASCRIPT
    ========================================================= */
 
 
-/* ================= CONFIGURATION ================= */
+/* =========================================================
+   CONFIGURATION
+   ========================================================= */
 
 const API_URL = "/api/chat";
+const HEALTH_URL = "/api/health";
 
 
-/* ================= DOM ELEMENTS ================= */
+/* =========================================================
+   DOM ELEMENTS
+   ========================================================= */
 
 const customerIdInput =
     document.getElementById("customer-id");
@@ -19,6 +24,15 @@ const loadCustomerButton =
 
 const customerDisplay =
     document.getElementById("customer-display");
+
+const customerInfo =
+    document.getElementById("customer-info");
+
+const customerName =
+    document.getElementById("customer-name");
+
+const customerIdDisplay =
+    document.getElementById("customer-id-display");
 
 const messageInput =
     document.getElementById("message-input");
@@ -41,31 +55,139 @@ const memoryList =
 const memoryStatus =
     document.getElementById("memory-status");
 
+const memoryStatusText =
+    document.getElementById("memory-status-text");
 
-/* ================= APPLICATION STATE ================= */
+const connectionStatus =
+    document.getElementById("connection-status");
+
+const connectionText =
+    document.getElementById("connection-text");
+
+
+/* =========================================================
+   APPLICATION STATE
+   ========================================================= */
 
 let currentCustomerId =
-    customerIdInput.value.trim();
+    customerIdInput.value.trim().toUpperCase();
 
 let isSending = false;
 
 
-/* ================= INITIALIZATION ================= */
+/* =========================================================
+   INITIALIZATION
+   ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
 
-    updateCustomerDisplay();
+        updateCustomerDisplay();
 
-    messageInput.focus();
+        await checkBackendConnection();
 
-});
+        messageInput.focus();
+
+    }
+);
 
 
-/* ================= CUSTOMER ================= */
+/* =========================================================
+   BACKEND CONNECTION
+   ========================================================= */
+
+async function checkBackendConnection() {
+
+    try {
+
+        const response =
+            await fetch(
+                HEALTH_URL
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            response.ok &&
+            data.success
+        ) {
+
+            setConnectionStatus(
+                true,
+                "AI Online"
+            );
+
+        } else {
+
+            setConnectionStatus(
+                false,
+                "Server Error"
+            );
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Backend health check failed:",
+            error
+        );
+
+
+        setConnectionStatus(
+            false,
+            "Backend Offline"
+        );
+
+    }
+
+}
+
+
+function setConnectionStatus(
+    online,
+    text
+) {
+
+    connectionText.textContent =
+        text;
+
+
+    connectionStatus.classList.remove(
+        "online",
+        "offline"
+    );
+
+
+    if (online) {
+
+        connectionStatus.classList.add(
+            "online"
+        );
+
+    } else {
+
+        connectionStatus.classList.add(
+            "offline"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CUSTOMER
+   ========================================================= */
 
 function getCustomerId() {
 
-    return customerIdInput.value
+    return customerIdInput
+        .value
         .trim()
         .toUpperCase();
 
@@ -74,28 +196,37 @@ function getCustomerId() {
 
 function updateCustomerDisplay() {
 
-    currentCustomerId = getCustomerId();
+    currentCustomerId =
+        getCustomerId();
+
 
     if (!currentCustomerId) {
 
         customerDisplay.textContent =
             "Customer: Not selected";
 
+
+        customerInfo.classList.add(
+            "hidden"
+        );
+
+
         setMemoryStatus(
             "Waiting for customer",
             false
         );
 
+
         return;
     }
+
 
     customerDisplay.textContent =
         `Customer: ${currentCustomerId}`;
 
-    setMemoryStatus(
-        `Memory ready for ${currentCustomerId}`,
-        true
-    );
+
+    customerIdDisplay.textContent =
+        currentCustomerId;
 
 }
 
@@ -105,51 +236,10 @@ function loadCustomer() {
     const customerId =
         getCustomerId();
 
-    if (!customerId) {
-
-        showError(
-            "Please enter a customer ID first."
-        );
-
-        customerIdInput.focus();
-
-        return;
-    }
-
-    currentCustomerId =
-        customerId;
-
-    updateCustomerDisplay();
-
-    clearMemoryList();
-
-    addSystemMessage(
-        `Customer ${customerId} loaded. You can now start a support conversation.`
-    );
-
-    messageInput.focus();
-
-}
-
-
-/* ================= SEND MESSAGE ================= */
-
-async function sendMessage() {
-
-    if (isSending) {
-        return;
-    }
-
-    const message =
-        messageInput.value.trim();
-
-    const customerId =
-        getCustomerId();
-
 
     if (!customerId) {
 
-        showError(
+        addErrorMessage(
             "Please enter a customer ID."
         );
 
@@ -158,6 +248,76 @@ async function sendMessage() {
         return;
     }
 
+
+    currentCustomerId =
+        customerId;
+
+
+    updateCustomerDisplay();
+
+
+    customerInfo.classList.add(
+        "hidden"
+    );
+
+
+    clearMemoryList();
+
+
+    addSystemMessage(
+        `Customer ${customerId} selected. You can now start a support conversation.`
+    );
+
+
+    setMemoryStatus(
+        `Memory ready for ${customerId}`,
+        true
+    );
+
+
+    messageInput.focus();
+
+}
+
+
+/* =========================================================
+   SEND MESSAGE
+   ========================================================= */
+
+async function sendMessage() {
+
+    if (isSending) {
+        return;
+    }
+
+
+    const message =
+        messageInput.value.trim();
+
+
+    const customerId =
+        getCustomerId();
+
+
+    /* -------------------------------
+       Validate customer
+       ------------------------------- */
+
+    if (!customerId) {
+
+        addErrorMessage(
+            "Please enter a customer ID."
+        );
+
+        customerIdInput.focus();
+
+        return;
+    }
+
+
+    /* -------------------------------
+       Validate message
+       ------------------------------- */
 
     if (!message) {
 
@@ -171,26 +331,40 @@ async function sendMessage() {
         customerId;
 
 
-    /* Display user's message */
+    /* -------------------------------
+       Display user message
+       ------------------------------- */
 
-    addUserMessage(message);
+    addUserMessage(
+        message
+    );
 
 
-    /* Clear input */
+    /* -------------------------------
+       Clear input
+       ------------------------------- */
 
     messageInput.value = "";
 
     autoResizeTextarea();
 
 
-    /* Start loading state */
+    /* -------------------------------
+       Loading state
+       ------------------------------- */
 
-    setSendingState(true);
+    setSendingState(
+        true
+    );
 
     showTypingIndicator();
 
 
     try {
+
+        /* ---------------------------
+           Call backend
+           --------------------------- */
 
         const result =
             await callChatAPI(
@@ -202,30 +376,73 @@ async function sendMessage() {
         hideTypingIndicator();
 
 
+        /* ---------------------------
+           Backend failure
+           --------------------------- */
+
         if (!result.success) {
 
             addErrorMessage(
                 result.error ||
-                "The server could not process your request."
+                "The server could not process the request."
             );
 
             return;
         }
 
 
-        /* Display AI response */
+        /* ---------------------------
+           Update customer information
+           --------------------------- */
+
+        if (result.customer_name) {
+
+            customerName.textContent =
+                result.customer_name;
+
+            customerIdDisplay.textContent =
+                result.customer_id;
+
+            customerInfo.classList.remove(
+                "hidden"
+            );
+
+        }
+
+
+        /* ---------------------------
+           Display AI response
+           --------------------------- */
 
         addAIMessage(
             result.response ||
-            "I received your message, but no response was generated."
+            "No response was generated."
         );
 
 
-        /* Update recalled memory */
+        /* ---------------------------
+           Update recalled memories
+           --------------------------- */
 
         updateMemoryPanel(
             result.used_memory || []
         );
+
+
+        /* ---------------------------
+           Update memory state
+           --------------------------- */
+
+        if (
+            result.memory_saved === true
+        ) {
+
+            setMemoryStatus(
+                "Memory updated from conversation",
+                true
+            );
+
+        }
 
 
     } catch (error) {
@@ -240,12 +457,15 @@ async function sendMessage() {
 
 
         addErrorMessage(
-            "Unable to connect to the support server. Please check that the backend is running."
+            "Unable to connect to the backend. Make sure the Flask server is running."
         );
+
 
     } finally {
 
-        setSendingState(false);
+        setSendingState(
+            false
+        );
 
         messageInput.focus();
 
@@ -254,7 +474,9 @@ async function sendMessage() {
 }
 
 
-/* ================= API CALL ================= */
+/* =========================================================
+   CHAT API
+   ========================================================= */
 
 async function callChatAPI(
     customerId,
@@ -288,15 +510,16 @@ async function callChatAPI(
 
     let data;
 
+
     try {
 
         data =
             await response.json();
 
-    } catch {
+    } catch (error) {
 
         throw new Error(
-            "Invalid response received from server."
+            "The backend returned an invalid response."
         );
 
     }
@@ -317,12 +540,19 @@ async function callChatAPI(
 }
 
 
-/* ================= ADD USER MESSAGE ================= */
+/* =========================================================
+   ADD USER MESSAGE
+   ========================================================= */
 
-function addUserMessage(message) {
+function addUserMessage(
+    message
+) {
 
     const messageElement =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     messageElement.className =
         "message user-message";
@@ -371,12 +601,19 @@ function addUserMessage(message) {
 }
 
 
-/* ================= ADD AI MESSAGE ================= */
+/* =========================================================
+   ADD AI MESSAGE
+   ========================================================= */
 
-function addAIMessage(message) {
+function addAIMessage(
+    message
+) {
 
     const messageElement =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     messageElement.className =
         "message ai-message";
@@ -425,12 +662,19 @@ function addAIMessage(message) {
 }
 
 
-/* ================= SYSTEM MESSAGE ================= */
+/* =========================================================
+   SYSTEM MESSAGE
+   ========================================================= */
 
-function addSystemMessage(message) {
+function addSystemMessage(
+    message
+) {
 
     const messageElement =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     messageElement.className =
         "message ai-message";
@@ -460,7 +704,9 @@ function addSystemMessage(message) {
 
 
     messageElement
-        .querySelector(".message-bubble")
+        .querySelector(
+            ".message-bubble"
+        )
         .textContent = message;
 
 
@@ -474,12 +720,19 @@ function addSystemMessage(message) {
 }
 
 
-/* ================= ERROR MESSAGE ================= */
+/* =========================================================
+   ERROR MESSAGE
+   ========================================================= */
 
-function addErrorMessage(message) {
+function addErrorMessage(
+    message
+) {
 
     const messageElement =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     messageElement.className =
         "message ai-message error-message";
@@ -509,7 +762,9 @@ function addErrorMessage(message) {
 
 
     messageElement
-        .querySelector(".message-bubble")
+        .querySelector(
+            ".message-bubble"
+        )
         .textContent = message;
 
 
@@ -523,20 +778,16 @@ function addErrorMessage(message) {
 }
 
 
-/* ================= SHOW ERROR ================= */
+/* =========================================================
+   MEMORY PANEL
+   ========================================================= */
 
-function showError(message) {
+function updateMemoryPanel(
+    memories
+) {
 
-    addErrorMessage(message);
-
-}
-
-
-/* ================= MEMORY PANEL ================= */
-
-function updateMemoryPanel(memories) {
-
-    memoryList.innerHTML = "";
+    memoryList.innerHTML =
+        "";
 
 
     if (
@@ -557,8 +808,8 @@ function updateMemoryPanel(memories) {
                 </h3>
 
                 <p>
-                    No customer memories were
-                    returned for this message.
+                    Hindsight did not return relevant
+                    memories for this message.
                 </p>
 
             </div>
@@ -571,15 +822,23 @@ function updateMemoryPanel(memories) {
             false
         );
 
+
         return;
+
     }
 
 
     memories.forEach(
-        (memory, index) => {
+        (
+            memory,
+            index
+        ) => {
 
             const memoryElement =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
+
 
             memoryElement.className =
                 "memory-item";
@@ -604,12 +863,16 @@ function updateMemoryPanel(memories) {
             `;
 
 
-            memoryElement
-                .querySelector(
+            const textElement =
+                memoryElement.querySelector(
                     ".memory-item-text"
-                )
-                .textContent =
-                    formatMemory(memory);
+                );
+
+
+            textElement.textContent =
+                formatMemory(
+                    memory
+                );
 
 
             memoryList.appendChild(
@@ -621,16 +884,20 @@ function updateMemoryPanel(memories) {
 
 
     setMemoryStatus(
-        `${memories.length} memory item(s) recalled`,
+        `${memories.length} relevant memory item(s) recalled`,
         true
     );
 
 }
 
 
-/* ================= MEMORY FORMAT ================= */
+/* =========================================================
+   FORMAT MEMORY
+   ========================================================= */
 
-function formatMemory(memory) {
+function formatMemory(
+    memory
+) {
 
     if (
         typeof memory === "string"
@@ -646,13 +913,23 @@ function formatMemory(memory) {
         typeof memory === "object"
     ) {
 
-        if (memory.text) {
+        if (
+            memory.text
+        ) {
+
             return memory.text;
+
         }
 
-        if (memory.content) {
+
+        if (
+            memory.content
+        ) {
+
             return memory.content;
+
         }
+
 
         try {
 
@@ -664,19 +941,25 @@ function formatMemory(memory) {
 
         } catch {
 
-            return String(memory);
+            return String(
+                memory
+            );
 
         }
 
     }
 
 
-    return String(memory);
+    return String(
+        memory
+    );
 
 }
 
 
-/* ================= CLEAR MEMORY ================= */
+/* =========================================================
+   CLEAR MEMORY
+   ========================================================= */
 
 function clearMemoryList() {
 
@@ -693,8 +976,8 @@ function clearMemoryList() {
             </h3>
 
             <p>
-                Customer memories will appear here
-                when the AI recalls useful information.
+                Relevant customer memories will
+                appear here when recalled.
             </p>
 
         </div>
@@ -710,22 +993,22 @@ function clearMemoryList() {
 }
 
 
-/* ================= MEMORY STATUS ================= */
+/* =========================================================
+   MEMORY STATUS
+   ========================================================= */
 
 function setMemoryStatus(
     text,
     active
 ) {
 
-    memoryStatus.innerHTML = `
+    memoryStatusText.textContent =
+        text;
 
-        <span class="memory-status-dot"></span>
 
-        <span>
-            ${escapeHTML(text)}
-        </span>
-
-    `;
+    memoryStatus.classList.remove(
+        "active"
+    );
 
 
     if (active) {
@@ -734,24 +1017,21 @@ function setMemoryStatus(
             "active"
         );
 
-    } else {
-
-        memoryStatus.classList.remove(
-            "active"
-        );
-
     }
 
 }
 
 
-/* ================= TYPING INDICATOR ================= */
+/* =========================================================
+   TYPING INDICATOR
+   ========================================================= */
 
 function showTypingIndicator() {
 
     typingIndicator.classList.remove(
         "hidden"
     );
+
 
     scrollChatToBottom();
 
@@ -767,41 +1047,67 @@ function hideTypingIndicator() {
 }
 
 
-/* ================= SENDING STATE ================= */
+/* =========================================================
+   SENDING STATE
+   ========================================================= */
 
-function setSendingState(sending) {
+function setSendingState(
+    sending
+) {
 
     isSending =
         sending;
 
+
     sendButton.disabled =
         sending;
+
 
     messageInput.disabled =
         sending;
 
+
     loadCustomerButton.disabled =
+        sending;
+
+
+    clearChatButton.disabled =
         sending;
 
 }
 
 
-/* ================= CLEAR CHAT ================= */
+/* =========================================================
+   CLEAR CHAT
+   ========================================================= */
 
 function clearChat() {
 
-    chatMessages.innerHTML = "";
+    chatMessages.innerHTML =
+        "";
+
 
     clearMemoryList();
 
-    addSystemMessage(
-        `Chat cleared for ${currentCustomerId}. How can I help you?`
+
+    customerInfo.classList.add(
+        "hidden"
     );
+
+
+    addSystemMessage(
+        `Chat cleared for ${currentCustomerId || "the selected customer"}. How can I help you?`
+    );
+
+
+    messageInput.focus();
 
 }
 
 
-/* ================= TEXTAREA ================= */
+/* =========================================================
+   TEXTAREA RESIZE
+   ========================================================= */
 
 function autoResizeTextarea() {
 
@@ -822,21 +1128,27 @@ function autoResizeTextarea() {
 }
 
 
-/* ================= SCROLL ================= */
+/* =========================================================
+   SCROLL CHAT
+   ========================================================= */
 
 function scrollChatToBottom() {
 
-    requestAnimationFrame(() => {
+    requestAnimationFrame(
+        () => {
 
-        chatMessages.scrollTop =
-            chatMessages.scrollHeight;
+            chatMessages.scrollTop =
+                chatMessages.scrollHeight;
 
-    });
+        }
+    );
 
 }
 
 
-/* ================= TIME ================= */
+/* =========================================================
+   TIME
+   ========================================================= */
 
 function getCurrentTime() {
 
@@ -852,25 +1164,12 @@ function getCurrentTime() {
 }
 
 
-/* ================= HTML ESCAPE ================= */
-
-function escapeHTML(value) {
-
-    const div =
-        document.createElement("div");
-
-    div.textContent =
-        value;
-
-    return div.innerHTML;
-
-}
+/* =========================================================
+   EVENT LISTENERS
+   ========================================================= */
 
 
-/* ================= EVENT LISTENERS ================= */
-
-
-/* Send button */
+/* Send */
 
 sendButton.addEventListener(
     "click",
@@ -894,7 +1193,9 @@ clearChatButton.addEventListener(
 );
 
 
-/* Enter key */
+/* Enter = Send
+   Shift + Enter = New line
+*/
 
 messageInput.addEventListener(
     "keydown",
@@ -923,7 +1224,7 @@ messageInput.addEventListener(
 );
 
 
-/* Customer ID input */
+/* Customer ID uppercase */
 
 customerIdInput.addEventListener(
     "input",
@@ -937,7 +1238,7 @@ customerIdInput.addEventListener(
 );
 
 
-/* Customer ID Enter key */
+/* Customer ID Enter */
 
 customerIdInput.addEventListener(
     "keydown",
