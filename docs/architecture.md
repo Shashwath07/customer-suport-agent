@@ -1,40 +1,64 @@
 # Customer Support AI Agent - Architecture
 
-## 1. Project Goal
+## 1. Project Overview
 
 The Customer Support AI Agent is an AI-powered customer support system
-that remembers customer-specific information across conversations.
+designed to provide personalized responses by using customer-specific
+memory across conversations.
 
-The system retrieves relevant customer memories before generating a response.
-This allows the AI agent to provide more personalized and context-aware
-customer support.
+The system combines:
+
+- A web-based customer support interface
+- Flask backend
+- Hindsight memory
+- Groq-powered LLM
+- Customer-specific data
+- Conversation memory
+- API-based integration between all modules
+
+The main objective is to make the AI support agent remember useful
+customer information and use that information when responding to
+future customer requests.
 
 ---
 
-## 2. High-Level Architecture
+# 2. Main Goal
+
+Traditional support systems often treat every customer message as
+an independent interaction.
+
+Our system instead maintains customer-specific context.
+
+Example:
+
+### First conversation
+
+Customer:
+
+> My payment failed.
+
+The system processes the issue and stores useful information.
+
+### Later conversation
+
+Customer:
+
+> It failed again.
+
+The system retrieves the previous payment-related memory and gives
+a more contextual response.
+
+Therefore:
 
 ```text
-Customer
-   |
-   v
-Frontend Chat UI
-   |
-   | POST /api/chat
-   v
-Backend / API
-   |
-   +--------------------+
-   |                    |
-   v                    v
-Memory Service      AI Agent
-   |                    |
-   v                    v
-Hindsight Cloud       Groq / LLM
-   |                    |
-   +---------+----------+
-             |
-             v
-       Final Response
-             |
-             v
-          Frontend
+Previous interaction
+        ↓
+Useful information stored
+        ↓
+Future interaction
+        ↓
+Relevant memory retrieved
+        ↓
+AI uses memory
+        ↓
+Personalized response
