@@ -1,1 +1,49 @@
-
+[
+  {
+    "customer_id": "CUST001",
+    "name": "Rahul",
+    "email": "rahul@example.com",
+    "plan": "Premium",
+    "communication_preference": "Email",
+    "location": "Hyderabad",
+    "previous_issues": [
+      "Payment failure",
+      "Subscription renewal issue"
+    ],
+    "important_information": [
+      "Customer prefers email communication",
+      "Customer is a Premium plan user"
+    ]
+  },
+  {
+    "customer_id": "CUST002",
+    "name": "Ananya",
+    "email": "ananya@example.com",
+    "plan": "Basic",
+    "communication_preference": "Chat",
+    "location": "Bengaluru",
+    "previous_issues": [
+      "Login problem"
+    ],
+    "important_information": [
+      "Customer prefers chat communication",
+      "Customer previously had a login issue"
+    ]
+  },
+  {
+    "customer_id": "CUST003",
+    "name": "Arjun",
+    "email": "arjun@example.com",
+    "plan": "Pro",
+    "communication_preference": "Email",
+    "location": "Chennai",
+    "previous_issues": [
+      "Refund request",
+      "Payment delay"
+    ],
+    "important_information": [
+      "Customer is waiting for a refund",
+      "Customer prefers email communication"
+    ]
+  }
+]
