@@ -1,378 +1,245 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hindsight AI - Support Operations</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- Landing / Home Page Section -->
+    <div id="landing-page" class="landing-container">
+      <!-- Navbar -->
+      <header class="navbar">
+        <div class="nav-logo">
+          <i class="fa-solid fa-brain logo-icon"></i>
+          <span>Hindsight<span class="highlight">AI</span></span>
+        </div>
+        <nav class="nav-links-desktop">
+          <a href="#features">Features</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#metrics">Impact</a>
+        </nav>
+        <button class="btn-launch" id="open-app-btn">
+          <span>Launch Copilot</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </header>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <!-- Hero Section -->
+      <section class="hero">
+        <div class="hero-badge">
+          <i class="fa-solid fa-bolt"></i> Powered by Hindsight Memory Engine
+        </div>
+        <h1 class="hero-title">
+          Customer Support with <br />
+          <span class="gradient-text">Zero Memory Loss</span>
+        </h1>
+        <p class="hero-subtitle">
+          Never make a customer repeat their story again. Our AI agent instantly
+          recalls past tickets, environment configurations, and effective
+          solutions in real time.
+        </p>
 
-    <title>SupportAI - Customer Support Agent</title>
+        <div class="hero-cta">
+          <button class="btn-hero-primary" id="hero-demo-btn">
+            <i class="fa-solid fa-headset"></i> Try Support Agent Demo
+          </button>
+          <a href="#features" class="btn-hero-secondary">
+            <i class="fa-solid fa-circle-play"></i> Explore Features
+          </a>
+        </div>
 
-    <link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-
-    <div class="app-container">
-
-        <!-- ================= HEADER ================= -->
-
-        <header class="top-bar">
-
-            <div class="brand">
-
-                <div class="brand-icon">
-                    ✦
-                </div>
-
-                <div class="brand-text">
-                    <h1>SupportAI</h1>
-                    <p>Customer Support AI Agent</p>
-                </div>
-
+        <!-- Feature Grid -->
+        <div class="feature-grid" id="features">
+          <div class="feature-card">
+            <div class="card-icon">
+              <i class="fa-solid fa-clock-rotate-left"></i>
             </div>
-
-            <div class="status" id="connection-status">
-
-                <span class="status-dot"></span>
-
-                <span id="connection-text">
-                    Checking...
-                </span>
-
-            </div>
-
-        </header>
-
-
-        <!-- ================= MAIN ================= -->
-
-        <main class="main-container">
-
-            <!-- ================= CHAT ================= -->
-
-            <section class="chat-section">
-
-                <!-- Chat header -->
-
-                <div class="chat-header">
-
-                    <div>
-
-                        <h2>
-                            Customer Support
-                        </h2>
-
-                        <p id="customer-display">
-                            Customer: Not selected
-                        </p>
-
-                    </div>
-
-                    <button
-                        id="clear-chat-btn"
-                        class="secondary-btn"
-                        type="button">
-
-                        Clear Chat
-
-                    </button>
-
-                </div>
-
-
-                <!-- Customer selection -->
-
-                <div class="customer-box">
-
-                    <label for="customer-id">
-                        Customer ID
-                    </label>
-
-                    <div class="customer-input-row">
-
-                        <input
-                            type="text"
-                            id="customer-id"
-                            value="CUST001"
-                            placeholder="Example: CUST001"
-                            autocomplete="off"
-                        >
-
-                        <button
-                            id="load-customer-btn"
-                            type="button">
-
-                            Load Customer
-
-                        </button>
-
-                    </div>
-
-                    <p class="input-help">
-                        Enter a customer ID to load their personalized support context.
-                    </p>
-
-                </div>
-
-
-                <!-- Customer information -->
-
-                <div
-                    id="customer-info"
-                    class="customer-info hidden">
-
-                    <div class="customer-info-item">
-
-                        <span class="customer-info-label">
-                            Customer
-                        </span>
-
-                        <span
-                            id="customer-name"
-                            class="customer-info-value">
-                            -
-                        </span>
-
-                    </div>
-
-                    <div class="customer-info-item">
-
-                        <span class="customer-info-label">
-                            Customer ID
-                        </span>
-
-                        <span
-                            id="customer-id-display"
-                            class="customer-info-value">
-                            -
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ================= CHAT MESSAGES ================= -->
-
-                <div
-                    id="chat-messages"
-                    class="chat-messages">
-
-                    <!-- Initial AI message -->
-
-                    <div class="message ai-message">
-
-                        <div class="avatar ai-avatar">
-                            AI
-                        </div>
-
-                        <div class="message-content">
-
-                            <div class="message-name">
-                                SupportAI
-                            </div>
-
-                            <div class="message-bubble">
-                                Hello! I'm your customer support assistant.
-                                I can remember useful information about
-                                customers and use relevant memories during
-                                future conversations.
-                            </div>
-
-                            <div class="message-time">
-                                Just now
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ================= TYPING ================= -->
-
-                <div
-                    id="typing-indicator"
-                    class="typing-indicator hidden">
-
-                    <div class="avatar ai-avatar">
-                        AI
-                    </div>
-
-                    <div class="typing-bubble">
-
-                        <span></span>
-                        <span></span>
-                        <span></span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ================= INPUT ================= -->
-
-                <div class="message-input-area">
-
-                    <textarea
-                        id="message-input"
-                        rows="1"
-                        placeholder="Type your message..."
-                        autocomplete="off"
-                    ></textarea>
-
-                    <button
-                        id="send-btn"
-                        class="send-btn"
-                        type="button"
-                        aria-label="Send message">
-
-                        ➤
-
-                    </button>
-
-                </div>
-
-                <p class="privacy-note">
-                    Your message is processed by the backend and relevant
-                    customer memories may be used to personalize the response.
-                </p>
-
-            </section>
-
-
-            <!-- ================= MEMORY SIDEBAR ================= -->
-
-            <aside class="memory-section">
-
-                <!-- Memory heading -->
-
-                <div class="memory-header">
-
-                    <div class="memory-title">
-
-                        <div class="memory-icon">
-                            🧠
-                        </div>
-
-                        <div>
-
-                            <h2>
-                                Recalled Memory
-                            </h2>
-
-                            <p>
-                                Relevant customer information
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Memory status -->
-
-                <div
-                    id="memory-status"
-                    class="memory-status">
-
-                    <span class="memory-status-dot"></span>
-
-                    <span id="memory-status-text">
-                        Waiting for customer
-                    </span>
-
-                </div>
-
-
-                <!-- Memory list -->
-
-                <div
-                    id="memory-list"
-                    class="memory-list">
-
-                    <div class="empty-memory">
-
-                        <div class="empty-memory-icon">
-                            🧠
-                        </div>
-
-                        <h3>
-                            No memories yet
-                        </h3>
-
-                        <p>
-                            Relevant customer memories will appear here
-                            when the AI recalls them.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Memory explanation -->
-
-                <div class="memory-info">
-
-                    <h3>
-                        How memory works
-                    </h3>
-
-                    <div class="memory-step">
-
-                        <span>1</span>
-
-                        <p>
-                            Customer sends a message.
-                        </p>
-
-                    </div>
-
-                    <div class="memory-step">
-
-                        <span>2</span>
-
-                        <p>
-                            Hindsight retrieves relevant memories.
-                        </p>
-
-                    </div>
-
-                    <div class="memory-step">
-
-                        <span>3</span>
-
-                        <p>
-                            The AI uses relevant memory to answer.
-                        </p>
-
-                    </div>
-
-                    <div class="memory-step">
-
-                        <span>4</span>
-
-                        <p>
-                            The conversation can be stored for future context.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </aside>
-
-        </main>
-
+            <h3>Ticket History Memory</h3>
+            <p>
+              Remembers past tickets, active issues, and verified resolutions
+              across every user session.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="card-icon"><i class="fa-solid fa-desktop"></i></div>
+            <h3>Environment Context</h3>
+            <p>
+              Automatically tracks OS, application versions, and tech stacks for
+              instant troubleshooting.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="card-icon"><i class="fa-solid fa-face-smile"></i></div>
+            <h3>Sentiment & Frustration</h3>
+            <p>
+              Monitors customer frustration levels to adjust tone and prioritize
+              critical support tickets.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
 
+    <!-- Chatbot Modal Workspace Overlay -->
+    <div id="app-modal" class="modal-overlay hidden">
+      <div class="app-container">
+        <!-- App Nav -->
+        <nav class="app-nav">
+          <div class="nav-brand">
+            <i class="fa-solid fa-brain brand-icon"></i>
+          </div>
+          <div class="nav-links">
+            <a href="#" class="nav-item active"
+              ><i class="fa-solid fa-message"></i
+            ></a>
+            <a href="#" class="nav-item"
+              ><i class="fa-solid fa-diagram-project"></i
+            ></a>
+          </div>
+          <div class="nav-footer">
+            <button
+              class="btn-close-app"
+              id="close-app-btn"
+              title="Back to Home"
+            >
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </nav>
+
+        <!-- Sidebar: Memory Dashboard -->
+        <aside class="sidebar">
+          <div class="sidebar-header">
+            <div>
+              <h2>Memory Dashboard</h2>
+              <span class="subtitle">Context & Sentiment Tracking</span>
+            </div>
+            <span class="pulse-indicator"></span>
+          </div>
+
+          <div class="glass-card profile-card">
+            <div class="avatar">JD</div>
+            <div class="profile-info">
+              <h3>John Doe</h3>
+              <p class="cust-id">ID: #CUST-8921</p>
+              <span class="badge tier-badge"
+                ><i class="fa-solid fa-shield-halved"></i> Enterprise Tier</span
+              >
+            </div>
+          </div>
+
+          <div class="glass-card frustration-card">
+            <div class="frustration-header">
+              <span>Frustration Index</span>
+              <span class="frustration-val">12% (Low)</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 12%"></div>
+            </div>
+          </div>
+
+          <div class="memory-block">
+            <h4 class="block-title">
+              <i class="fa-solid fa-desktop"></i> Environment Memory
+            </h4>
+            <div class="env-grid">
+              <div class="env-tag">
+                <i class="fa-brands fa-apple"></i> macOS 14.2
+              </div>
+              <div class="env-tag">
+                <i class="fa-solid fa-code"></i> App v2.4.1
+              </div>
+              <div class="env-tag">
+                <i class="fa-solid fa-database"></i> PostgreSQL
+              </div>
+            </div>
+          </div>
+
+          <div class="memory-block">
+            <h4 class="block-title">
+              <i class="fa-solid fa-clock-rotate-left"></i> Resolved Ticket
+              Memory
+            </h4>
+            <div class="history-item">
+              <div class="history-meta">
+                <span class="ticket-id">#TK-4921</span>
+                <span class="ticket-time">14 days ago</span>
+              </div>
+              <p class="history-title">OAuth Token Expiration Failure</p>
+              <span class="pill pill-success"
+                ><i class="fa-solid fa-check"></i> Solution: Key
+                Regeneration</span
+              >
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-workspace">
+          <header class="workspace-header">
+            <div class="header-left">
+              <h2>AI Support Copilot</h2>
+              <span class="status-online"
+                ><i class="fa-solid fa-circle"></i> Connected to Hindsight
+                Memory Engine</span
+              >
+            </div>
+            <div class="header-actions">
+              <button class="btn-secondary" id="exit-chat-btn">
+                <i class="fa-solid fa-house"></i> Exit to Home
+              </button>
+            </div>
+          </header>
+
+          <div class="chat-thread" id="chat-messages">
+            <div class="message bot-message">
+              <div class="message-avatar">
+                <i class="fa-solid fa-robot"></i>
+              </div>
+              <div class="message-bubble">
+                <div class="message-sender">
+                  Hindsight Agent <span class="time">Just now</span>
+                </div>
+                <div class="message-text">
+                  Hello John! I've loaded your account context and ticket
+                  history. How can I assist you today?
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-input-wrapper">
+            <form id="chat-form" class="chat-input-box">
+              <i class="fa-solid fa-paperclip attach-icon"></i>
+              <input
+                type="text"
+                id="user-input"
+                placeholder="Describe your issue..."
+                required
+                autocomplete="off"
+              />
+              <button type="submit" id="send-btn">
+                <span>Send</span>
+                <i class="fa-solid fa-paper-plane"></i>
+              </button>
+            </form>
+          </div>
+        </main>
+      </div>
+    </div>
 
     <script src="script.js"></script>
-
-</body>
-
+  </body>
 </html>
