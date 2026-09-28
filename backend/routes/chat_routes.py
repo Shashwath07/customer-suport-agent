@@ -15,6 +15,13 @@ def chat():
         return jsonify(error="customer_id and message required"), 400
     return jsonify(chat_service.handle_chat(cid, msg)), 200
 
+@chat_bp.route("/customer/<customer_id>", methods=["GET"])
+def get_customer_info(customer_id):
+    data = chat_service.get_customer_context(customer_id)
+    if not data["profile"]:
+        return jsonify(error="Customer not found"), 404
+    return jsonify(data), 200
+
 @chat_bp.route("/review", methods=["POST"])
 def review():
     cid, msg = _payload()
