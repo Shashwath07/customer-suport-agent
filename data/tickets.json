@@ -1,1 +1,26 @@
-
+[
+  {
+    "ticket_id": "T001",
+    "customer_id": "CUST001",
+    "issue": "Payment failure",
+    "solution_attempted": "Retry payment",
+    "result": "Failed",
+    "status": "Closed"
+  },
+  {
+    "ticket_id": "T002",
+    "customer_id": "CUST001",
+    "issue": "Subscription renewal issue",
+    "solution_attempted": "Manual renewal",
+    "result": "Resolved",
+    "status": "Closed"
+  },
+  {
+    "ticket_id": "T003",
+    "customer_id": "CUST001",
+    "issue": "Payment failure",
+    "solution_attempted": "Retry payment",
+    "result": "Failed",
+    "status": "Open"
+  }
+]
