@@ -7,13 +7,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeAppBtn = document.getElementById("close-app-btn");
   const exitChatBtn = document.getElementById("exit-chat-btn");
 
-  // Launch Chatbot Modal
   const launchApp = () => {
     landingPage.classList.add("hidden");
     appModal.classList.remove("hidden");
   };
 
-  // Close Chatbot Modal & Return Home
   const closeApp = () => {
     appModal.classList.add("hidden");
     landingPage.classList.remove("hidden");
@@ -24,10 +22,13 @@ document.addEventListener("DOMContentLoaded", () => {
   closeAppBtn.addEventListener("click", closeApp);
   exitChatBtn.addEventListener("click", closeApp);
 
-  // Existing Chat Logic
+  // Chat Elements
   const chatForm = document.getElementById("chat-form");
   const userInput = document.getElementById("user-input");
   const chatMessages = document.getElementById("chat-messages");
+
+  // Consistent Customer ID aligned with mock backend
+  const CUSTOMER_ID = "cust1";
 
   chatForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -45,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customer_id: "CUST-8921",
+          customer_id: CUSTOMER_ID,
           message: messageText,
         }),
       });
@@ -53,23 +54,35 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json();
       loadingMessage.remove();
 
-      if (response.ok && data.response) {
-        appendMessage(data.response, "bot", data.memory_cited);
+      // Aligned with backend output keys: reply & recalled_memories
+      if (response.ok && data.reply) {
+        let citation = null;
+        if (data.recalled_memories && data.recalled_memories.length > 0) {
+          citation = `Recalled: ${data.recalled_memories[0]}`;
+          updateSidebarMemory(data.recalled_memories[0]);
+        }
+        appendMessage(data.reply, "bot", citation);
       } else {
         appendMessage(
-          "I encountered an error looking up customer memory history.",
-          "bot",
+          data.error || "I encountered an error looking up customer memory history.",
+          "bot"
         );
       }
     } catch (error) {
       loadingMessage.remove();
       appendMessage(
-        "I analyzed your request against ticket history (#TK-4921). It looks similar to your previous OAuth issue on macOS 14.2. Would you like me to regenerate your API credentials?",
-        "bot",
-        "Recalled from Hindsight Memory Engine",
+        "Could not connect to the backend server. Ensure backend/app.py is running on port 5000.",
+        "bot"
       );
     }
   });
+
+  function updateSidebarMemory(memoryText) {
+    const historyTitle = document.querySelector(".history-title");
+    if (historyTitle) {
+      historyTitle.textContent = memoryText;
+    }
+  }
 
   function appendMessage(text, sender, citation = null) {
     const msgDiv = document.createElement("div");
