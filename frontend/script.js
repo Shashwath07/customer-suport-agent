@@ -6,21 +6,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const heroDemoBtn = document.getElementById("hero-demo-btn");
   const closeAppBtn = document.getElementById("close-app-btn");
   const exitChatBtn = document.getElementById("exit-chat-btn");
+  const clearChatBtn = document.getElementById("clear-chat-btn");
 
   const chatForm = document.getElementById("chat-form");
   const userInput = document.getElementById("user-input");
   const chatMessages = document.getElementById("chat-messages");
 
-  const CUSTOMER_ID = "CUST001";
+  // Persistent User Session ID in browser storage
+  let customerId = localStorage.getItem("hindsight_user_id");
+  if (!customerId) {
+    customerId = "CUST-" + Math.floor(1000 + Math.random() * 9000);
+    localStorage.setItem("hindsight_user_id", customerId);
+  }
+
   const API_BASE = "http://127.0.0.1:5000";
 
-  // Fetch initial profile & tickets on load
+  // Fetch initial profile & tickets on launch
   async function loadCustomerData() {
     try {
-      const res = await fetch(`${API_BASE}/customer/${CUSTOMER_ID}`);
+      const res = await fetch(`${API_BASE}/customer/${customerId}`);
       if (res.ok) {
         const data = await res.json();
         renderSidebar(data.profile, data.tickets);
+        if (data.profile && data.profile.name !== "Guest User") {
+          resetChatThread(data.profile.name);
+        }
       }
     } catch (e) {
       console.warn("Could not pre-load customer info:", e);
@@ -30,17 +40,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderSidebar(profile, tickets) {
     if (!profile) return;
     
-    // Update Profile
     const profileCard = document.querySelector(".profile-card");
     if (profileCard) {
-      const initials = profile.name.slice(0, 2).toUpperCase();
+      const initials = (profile.name || "GU").slice(0, 2).toUpperCase();
       profileCard.querySelector(".avatar").textContent = initials;
-      profileCard.querySelector(".profile-info h3").textContent = profile.name;
-      profileCard.querySelector(".cust-id").textContent = `ID: #${profile.customer_id}`;
-      profileCard.querySelector(".tier-badge").innerHTML = `<i class="fa-solid fa-shield-halved"></i> ${profile.plan} Plan`;
+      profileCard.querySelector(".profile-info h3").textContent = profile.name || "Guest User";
+      profileCard.querySelector(".cust-id").textContent = `ID: #${profile.customer_id || customerId}`;
+      profileCard.querySelector(".tier-badge").innerHTML = `<i class="fa-solid fa-shield-halved"></i> ${profile.plan || "Standard"} Plan`;
     }
 
-    // Update Tickets list
     if (tickets && tickets.length > 0) {
       const latest = tickets[tickets.length - 1];
       const historyItem = document.querySelector(".history-item");
@@ -50,6 +58,15 @@ document.addEventListener("DOMContentLoaded", () => {
         historyItem.querySelector(".pill").textContent = `Status: ${latest.status} (${latest.result})`;
       }
     }
+  }
+
+  function resetChatThread(userName = null) {
+    chatMessages.innerHTML = "";
+    const greeting = userName 
+      ? `Welcome back, ${userName}! I still have your details and context saved in Hindsight memory. How can I help you?`
+      : "Hello! I'm your AI Support Copilot. Tell me your name or describe your issue, and I'll remember it for your session.";
+    
+    appendMessage(greeting, "bot");
   }
 
   const launchApp = () => {
@@ -68,6 +85,15 @@ document.addEventListener("DOMContentLoaded", () => {
   closeAppBtn.addEventListener("click", closeApp);
   exitChatBtn.addEventListener("click", closeApp);
 
+  // Clear Chat Button Logic
+  if (clearChatBtn) {
+    clearChatBtn.addEventListener("click", () => {
+      // Re-fetch context from memory and wipe conversation UI
+      loadCustomerData();
+    });
+  }
+
+  // Handle Chat Submit
   chatForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const messageText = userInput.value.trim();
@@ -82,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customer_id: CUSTOMER_ID,
+          customer_id: customerId,
           message: messageText,
         }),
       });
@@ -93,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response.ok && data.reply) {
         let citation = null;
         if (data.recalled_memories && data.recalled_memories.length > 0) {
-          citation = `Recalled from memory: ${data.recalled_memories[0]}`;
+          citation = `Recalled from Hindsight: ${data.recalled_memories[0]}`;
         }
         appendMessage(data.reply, "bot", citation);
 
@@ -112,6 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function appendMessage(text, sender, citation = null) {
     const msgDiv = document.createElement("div");
     msgDiv.classList.add("message", `${sender}-message`);
+
     const icon = sender === "bot" ? "fa-robot" : "fa-user";
     const name = sender === "bot" ? "Hindsight Agent" : "You";
 
