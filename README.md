@@ -1,7 +1,7 @@
 
 ---
 
-# 4. `README.md`
+# `README.md`
 
 ```markdown
 # Customer Support AI Agent
