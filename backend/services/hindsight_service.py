@@ -16,7 +16,8 @@ def _run_coro(coro):
     future = asyncio.run_coroutine_threadsafe(coro, _loop)
     return future.result()
 
-client = Hindsight(base_url="http://localhost:8888")
+# Create the Hindsight client inside the background thread's loop
+client = _run_coro(asyncio.to_thread(Hindsight, base_url="http://localhost:8888"))
 
 def retain(customer_id: str, content: str):
     return _run_coro(client.aretain(bank_id=customer_id, content=content, context="customer review"))
