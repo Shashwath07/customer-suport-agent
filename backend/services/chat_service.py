@@ -2,25 +2,41 @@
 import os
 import sys
 
-# Add project root to sys.path
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 
 from agent.response import generate_agent_reply
 from memory import memory_service as ms
+from data import data_service as ds
 
 def handle_chat(customer_id: str, message: str):
-    # 1. Fetch relevant long-term memories via memory domain
+    # 1. Fetch structured customer profile and ticket data
+    profile = ds.get_customer(customer_id)
+    tickets = ds.get_customer_tickets(customer_id)
+
+    # 2. Fetch semantic memories from memory service
     memories = ms.get_customer_memories(customer_id, message)
 
-    # 2. Generate grounded response using agent pipeline (prompts + Groq LLM + formatting)
-    reply = generate_agent_reply(query=message, memories=memories)
+    # 3. Generate response with profile and memories injected
+    reply = generate_agent_reply(query=message, memories=memories, profile=profile)
 
-    # 3. Persist conversation turn back into memory
+    # 4. Save conversation back to memory
     ms.save_customer_conversation(customer_id, message, reply)
 
-    return {"reply": reply, "recalled_memories": memories}
+    return {
+        "reply": reply,
+        "recalled_memories": memories,
+        "profile": profile,
+        "tickets": tickets
+    }
+
+def get_customer_context(customer_id: str):
+    """Returns profile and tickets to populate UI sidebar on load."""
+    return {
+        "profile": ds.get_customer(customer_id),
+        "tickets": ds.get_customer_tickets(customer_id)
+    }
 
 def add_review(customer_id: str, text: str):
     ms.save_customer_memory(customer_id, text, context="Customer review")
