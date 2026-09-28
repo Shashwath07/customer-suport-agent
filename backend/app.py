@@ -1,46 +1,70 @@
+import asyncio
+import threading
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-
-# If your Memory Lead created a file named memory.py, import it like this:
-# from memory import get_memory
+from hindsight_client import Hindsight
 
 app = Flask(__name__)
 CORS(app)
 
-
-# Temporary fallback implementation until the Memory Lead's file is plugged in:
-def get_memory(customer_id: str) -> list[str]:
-    # Mock data store
-    sample_memories = {
-        "cust_001": [
-            "Sept 10: recurring task duplication, fixed by disabling auto-repeat",
-            "Aug 15: reported login delay after password reset",
-        ],
-        "cust_002": [
-            "July 04: requested upgrade to pro tier",
-        ],
-    }
-    return sample_memories.get(customer_id, [])
+# 1. Start a single persistent event loop in a dedicated background thread
+_loop = asyncio.new_event_loop()
+_thread = threading.Thread(target=_loop.run_forever, daemon=True)
+_thread.start()
 
 
-@app.route("/chat", methods=["POST", "GET"])
-def chat():
-    # 1. Parse incoming request
+# Helper to dispatch coroutines safely into the running background loop
+def run_coro(coro):
+    future = asyncio.run_coroutine_threadsafe(coro, _loop)
+    return future.result()
+
+
+# 2. Initialize Hindsight inside that loop so its aiohttp session never closes
+def _init_client():
+    return Hindsight(base_url="http://localhost:8888")
+
+
+client = run_coro(asyncio.sleep(0)) or _init_client()
+
+
+@app.route("/review", methods=["POST"])
+def review():
     data = request.get_json(silent=True) or {}
-    customer_id = data.get("customer_id")
-    message = data.get("message")
+    cid, msg = data.get("customer_id"), data.get("message")
+    if not cid or not msg:
+        return jsonify(error="customer_id and message required"), 400
 
-    # 2. Wire in Memory Retrieval as the first step
-    recalled_memories = get_memory(customer_id) if customer_id else []
+    run_coro(client.aretain(bank_id=cid, content=msg, context="customer review"))
+    return jsonify(status="stored"), 200
 
-    # 3. Construct response using the retrieved memories
-    response = {
-        "reply": f"Processing message for {customer_id}: '{message}'",
-        "recalled_memories": recalled_memories,
-    }
 
-    return jsonify(response), 200
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.get_json(silent=True) or {}
+    cid, msg = data.get("customer_id"), data.get("message")
+    if not cid or not msg:
+        return jsonify(error="customer_id and message required"), 400
+
+    results = run_coro(client.arecall(bank_id=cid, query=msg))
+    memories = [r.text for r in results.results]
+
+    reflection = run_coro(client.areflect(bank_id=cid, query=msg))
+    reply = reflection.text
+
+    return jsonify(reply=reply, recalled_memories=memories), 200
+
+
+@app.route("/insights", methods=["GET"])
+def insights():
+    cid = request.args.get("customer_id")
+    if not cid:
+        return jsonify(error="customer_id required"), 400
+
+    r = run_coro(
+        client.areflect(bank_id=cid, query="What problems keep recurring?")
+    )
+    return jsonify(insights=r.text), 200
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000, use_reloader=False)
