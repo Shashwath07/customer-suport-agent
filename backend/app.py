@@ -17,7 +17,6 @@ CORS(app)
 
 app.register_blueprint(chat_bp)
 
-# Serve index.html and assets directly
 @app.route("/")
 def index():
     return send_from_directory(FRONTEND_DIR, "index.html")
