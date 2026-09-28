@@ -1,5 +1,5 @@
-// frontend/script.js
 document.addEventListener("DOMContentLoaded", () => {
+  // Page Navigation Elements
   const landingPage = document.getElementById("landing-page");
   const appModal = document.getElementById("app-modal");
   const openAppBtn = document.getElementById("open-app-btn");
@@ -8,9 +8,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const exitChatBtn = document.getElementById("exit-chat-btn");
   const clearChatBtn = document.getElementById("clear-chat-btn");
 
+  // Chat Interface Elements
   const chatForm = document.getElementById("chat-form");
   const userInput = document.getElementById("user-input");
   const chatMessages = document.getElementById("chat-messages");
+
+  // Relative API URL: works seamlessly whether hosted locally or via Codespaces
+  const API_BASE = "";
 
   // Persistent User Session ID in browser storage
   let customerId = localStorage.getItem("hindsight_user_id");
@@ -19,27 +23,28 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("hindsight_user_id", customerId);
   }
 
-  const API_BASE = "http://127.0.0.1:5000";
-
-  // Fetch initial profile & tickets on launch
+  // Pre-load customer details & tickets from memory/database
   async function loadCustomerData() {
     try {
       const res = await fetch(`${API_BASE}/customer/${customerId}`);
       if (res.ok) {
         const data = await res.json();
         renderSidebar(data.profile, data.tickets);
-        if (data.profile && data.profile.name !== "Guest User") {
+        if (data.profile && data.profile.name && data.profile.name !== "Guest User") {
           resetChatThread(data.profile.name);
+          return;
         }
       }
     } catch (e) {
       console.warn("Could not pre-load customer info:", e);
     }
+    resetChatThread(null);
   }
 
   function renderSidebar(profile, tickets) {
     if (!profile) return;
-    
+
+    // Update Profile Card
     const profileCard = document.querySelector(".profile-card");
     if (profileCard) {
       const initials = (profile.name || "GU").slice(0, 2).toUpperCase();
@@ -49,26 +54,31 @@ document.addEventListener("DOMContentLoaded", () => {
       profileCard.querySelector(".tier-badge").innerHTML = `<i class="fa-solid fa-shield-halved"></i> ${profile.plan || "Standard"} Plan`;
     }
 
+    // Update Tickets block
     if (tickets && tickets.length > 0) {
       const latest = tickets[tickets.length - 1];
       const historyItem = document.querySelector(".history-item");
       if (historyItem) {
         historyItem.querySelector(".ticket-id").textContent = `#${latest.ticket_id}`;
         historyItem.querySelector(".history-title").textContent = latest.issue;
-        historyItem.querySelector(".pill").textContent = `Status: ${latest.status} (${latest.result})`;
+        const pill = historyItem.querySelector(".pill");
+        if (pill) {
+          pill.textContent = `Status: ${latest.status} (${latest.result})`;
+        }
       }
     }
   }
 
   function resetChatThread(userName = null) {
     chatMessages.innerHTML = "";
-    const greeting = userName 
-      ? `Welcome back, ${userName}! I still have your details and context saved in Hindsight memory. How can I help you?`
-      : "Hello! I'm your AI Support Copilot. Tell me your name or describe your issue, and I'll remember it for your session.";
-    
+    const greeting = userName
+      ? `Welcome back, ${userName}! I still have your details and context saved in Hindsight memory. How can I assist you today?`
+      : "Hello! I've loaded your workspace context. Tell me your name or describe your issue, and I'll retain it across your sessions.";
+
     appendMessage(greeting, "bot");
   }
 
+  // Navigation Event Handlers
   const launchApp = () => {
     landingPage.classList.add("hidden");
     appModal.classList.remove("hidden");
@@ -85,22 +95,23 @@ document.addEventListener("DOMContentLoaded", () => {
   closeAppBtn.addEventListener("click", closeApp);
   exitChatBtn.addEventListener("click", closeApp);
 
-  // Clear Chat Button Logic
+  // Clear Chat Button Logic (Tests memory retention after wiping DOM messages)
   if (clearChatBtn) {
     clearChatBtn.addEventListener("click", () => {
-      // Re-fetch context from memory and wipe conversation UI
       loadCustomerData();
     });
   }
 
-  // Handle Chat Submit
+  // Submit Chat Message
   chatForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const messageText = userInput.value.trim();
     if (!messageText) return;
 
     appendMessage(messageText, "user");
     userInput.value = "";
+
     const loadingMessage = appendLoadingMessage();
 
     try {
@@ -127,9 +138,12 @@ document.addEventListener("DOMContentLoaded", () => {
           renderSidebar(data.profile, data.tickets);
         }
       } else {
-        appendMessage(data.error || "Error processing request.", "bot");
+        appendMessage(
+          data.error || "I encountered an error looking up customer memory history.",
+          "bot"
+        );
       }
-    } catch (err) {
+    } catch (error) {
       loadingMessage.remove();
       appendMessage("Failed to connect to backend server.", "bot");
     }
