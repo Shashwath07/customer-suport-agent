@@ -1,28 +1,32 @@
+# backend/services/hindsight_service.py
 import asyncio
-import os
 import threading
+import sys
+import os
 
+# Ensure memory/ folder is discoverable
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../memory")))
 from hindsight_client import Hindsight
 
-# One persistent event loop in a background thread (keeps aiohttp session alive)
 _loop = asyncio.new_event_loop()
-threading.Thread(target=_loop.run_forever, daemon=True).start()
+_thread = threading.Thread(target=_loop.run_forever, daemon=True)
+_thread.start()
 
-client = Hindsight(base_url=os.getenv("HINDSIGHT_URL", "http://localhost:8888"))
+def _run_coro(coro):
+    future = asyncio.run_coroutine_threadsafe(coro, _loop)
+    return future.result()
 
+client = Hindsight(base_url="http://localhost:8888")
 
-def _run(coro):
-    return asyncio.run_coroutine_threadsafe(coro, _loop).result()
+def retain(customer_id: str, content: str):
+    return _run_coro(client.aretain(bank_id=customer_id, content=content, context="customer review"))
 
+def recall(customer_id: str, message: str):
+    results = _run_coro(client.arecall(bank_id=customer_id, query=message))
+    if hasattr(results, "results"):
+        return [r.text for r in results.results]
+    return []
 
-def retain(customer_id, text):
-    _run(client.aretain(bank_id=customer_id, content=text, context="customer review"))
-
-
-def recall(customer_id, query):
-    res = _run(client.arecall(bank_id=customer_id, query=query))
-    return [r.text for r in res.results]
-
-
-def reflect(customer_id, query):
-    return _run(client.areflect(bank_id=customer_id, query=query)).text
+def reflect(customer_id: str, query: str):
+    res = _run_coro(client.areflect(bank_id=customer_id, query=query))
+    return getattr(res, "text", str(res))
