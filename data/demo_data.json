@@ -1,1 +1,14 @@
-
+[
+  {
+    "customer_id": "CUST001",
+    "customer_name": "Rahul",
+    "scenario": "Returning customer with repeated payment failure",
+    "customer_message": "Hi, my payment is failing again.",
+    "expected_memory": [
+      "Previous payment failure",
+      "Retry payment was attempted and failed",
+      "Customer has an open payment issue"
+    ],
+    "expected_response": "Hi Rahul. I can see that you previously experienced a payment failure and that retrying the payment did not resolve it. Since the issue has happened again, let's troubleshoot it further."
+  }
+]
